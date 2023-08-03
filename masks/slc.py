@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def slc_off_mask(shape):
+def slc_off_mask_simulated(shape):
     """
     Creates a boolean mask replicating what might be observed in a Landsat 7 image after the Scan Line Corrector failure
     """
@@ -13,3 +13,18 @@ def slc_off_mask(shape):
     if len(shape) > 2:
         mask = np.stack([mask] * shape[2], axis=-1)
     return mask
+
+
+def slc_off_mask(shape):
+    """
+    Loads a boolean mask taken from a Landsat 7 image which suffers from the Scan Line Corrector failure
+
+    Returns a mask with size: shape + (2,)
+    """
+    assert len(shape) in [2, 3]
+    if shape[0] > 1200 or shape[1] > 1207:
+        raise ValueError(f"Mask shape limited to size (1200, 1207) but was asked to produce of shape {shape[:2]}")
+    mask = np.stack([~np.load("inputs/missing_A.npy"), ~np.load("inputs/missing_B.npy")], axis=-1)
+    if len(shape) > 2:
+        mask = np.stack([mask] * shape[2], axis=-2)  # repeat in penultimate dimension
+    return mask[:shape[0], :shape[1]]
