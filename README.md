@@ -1,7 +1,5 @@
 ## GraphProp
 
-This repository contains the code for the paper [Graph-Based Propagation for Tensor Completion with Remote Sensing Data](https://httpstat.us/404).
-
 ### Requirements
 
 > * `matplotlib==3.5.1`
