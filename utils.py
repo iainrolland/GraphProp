@@ -67,17 +67,9 @@ def masking(acquision_array_shape, params):
 
 
 def build_graph(image, mask, params):
-    if params["mask"] == "SLC-off":
-        graph = graphs.single_graph(image[..., 0], k=params["k"])
-        logging.info("Graph computed!")
-        return graph
-    elif params["mask"] == "partial-overlap":
-        graph = graphs.dual_graph(image, mask, k=params["k"])
-        logging.info("Graph computed!")
-        return graph
-    else:
-        logging.error(f"""Masking method not recognised '{params["mask"]}'""")
-        raise ValueError
+    graph = graphs.dual_graph(image, mask, k=params["k"])
+    logging.info("Graph computed!")
+    return graph
 
 
 def completing(image, mask, params):
@@ -90,30 +82,18 @@ def completing(image, mask, params):
         return HaLRTC.complete(image, mask, epsilon=1e-2, rho=1e-4)
     elif params["method"] in ["GTVM", "GraphProp"]:
         adj = build_graph(image, mask, params)
-        if params["mask"] == "SLC-off":
-            if params["method"] == "GTVM":
-                return np.stack(
-                    [image[..., 0],
-                     gtvm.complete(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
-                    axis=-1)
-            else:
-                return np.stack(
-                    [image[..., 0],
-                     diffusion.graph_prop(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
-                    axis=-1)
-        elif params["mask"] == "partial-overlap":
-            if params["method"] == "GTVM":
-                return np.stack(
-                    [gtvm.complete(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
-                     gtvm.complete(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
-                    axis=-1
-                )
-            else:
-                return np.stack(
-                    [diffusion.graph_prop(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
-                     diffusion.graph_prop(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
-                    axis=-1
-                )
+        if params["method"] == "GTVM":
+            return np.stack(
+                [gtvm.complete(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
+                 gtvm.complete(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
+                axis=-1
+            )
+        else:
+            return np.stack(
+                [diffusion.graph_prop(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
+                 diffusion.graph_prop(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
+                axis=-1
+            )
     else:
         logging.error(f"""Completion method not recognised '{params["method"]}'""")
         raise ValueError
