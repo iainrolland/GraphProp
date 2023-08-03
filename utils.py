@@ -56,8 +56,7 @@ def masking(acquision_array_shape, params):
     returns array of shape acquision_array_shape + (2,) where extra dim comes from stacking temporally
     """
     if params["mask"] == "SLC-off":
-        mask = masks.slc_off_mask(acquision_array_shape)
-        return np.stack([np.ones_like(mask), mask], axis=-1)
+        return masks.slc_off_mask(acquision_array_shape)
     elif params["mask"] == "partial-overlap":
         logging.info("First 90 rows and columns of file_0 masked")
         logging.info("Last 90 rows and columns of file_1 masked")
