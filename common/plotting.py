@@ -23,7 +23,7 @@ def show_results(params_path, output, mask):
     # insert 0.0 where mask is False (we used nan before for computing percentiles in normalisation step)
     image = np.nan_to_num(image, nan=0.)
 
-    fig, ax = plt.subplots(2, 3)
+    fig, ax = plt.subplots(2, 3, sharex=True, sharey=True)
     ax[0, 0].set_ylabel("Day A")
     ax[1, 0].set_ylabel("Day B")
 
