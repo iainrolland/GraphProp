@@ -22,7 +22,7 @@ pip install -r requirements.txt
     * `GraphProp` (our method)
 * `--pattern` one of:
     * `SLC-off`
-    * `partial-ovelap`
+    * `partial-overlap`
 * `--plot` one of:
     * `True` (save results then show them in `matplotlib` window)
     * `False` (save results then exit)
