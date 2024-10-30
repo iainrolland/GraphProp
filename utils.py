@@ -5,8 +5,6 @@ import logging
 
 import masks
 import graphs
-from NgEtAl2017 import AWTC
-from LiuEtAl2012 import HaLRTC
 import gtvm
 import diffusion
 
@@ -76,24 +74,13 @@ def completing(image, mask, params):
     """
     returns array of shape same as image (ndim = 4, last dim is temporal)
     """
-    if params["method"] == "AWTC":
-        return AWTC.complete(image, mask, epsilon=1e-2, rho=1e-4, eta=10)
-    elif params["method"] == "HaLRTC":
-        return HaLRTC.complete(image, mask, epsilon=1e-2, rho=1e-4)
-    elif params["method"] in ["GTVM", "GraphProp"]:
+    if params["method"] in ["GraphProp"]:
         adj = build_graph(image, mask, params)
-        if params["method"] == "GTVM":
-            return np.stack(
-                [gtvm.complete(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
-                 gtvm.complete(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
-                axis=-1
-            )
-        else:
-            return np.stack(
-                [diffusion.graph_prop(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
-                 diffusion.graph_prop(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
-                axis=-1
-            )
+        return np.stack(
+            [diffusion.graph_prop(adj, image[..., 0], mask[..., 0], iterative=params["iterative"]),
+             diffusion.graph_prop(adj, image[..., 1], mask[..., 1], iterative=params["iterative"])],
+            axis=-1
+        )
     else:
         logging.error(f"""Completion method not recognised '{params["method"]}'""")
         raise ValueError
