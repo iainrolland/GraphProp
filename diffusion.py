@@ -1,7 +1,8 @@
 import logging
 import numpy as np
 import scipy.sparse as sp
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import spsolve, cg
+from ilupp import IChol0Preconditioner  # gets L for incomplete Cholesky factorisation
 
 import common.image_utils as iu
 import common.adj_utils as au
@@ -116,9 +117,19 @@ def _analytical(observed, laplacian, omega):
     completed[omega == 1] = observed[omega == 1]
     logging.info("Solving analytically...")
     laplacian += 1e-6 * sp.eye(laplacian.shape[0])  # avoid singularity
-    completed[omega == 0] = (
-        spsolve(laplacian[omega == 0][:, omega == 0],
-                -laplacian[omega == 0][:, omega == 1].dot(observed[omega == 1]))
-    ).reshape(completed[omega == 0].shape)
+
+    # completed[omega == 0] = (
+    #     spsolve(laplacian[omega == 0][:, omega == 0],
+    #             -laplacian[omega == 0][:, omega == 1].dot(observed[omega == 1]))
+    # ).reshape(completed[omega == 0].shape)
+
+    # M is a preconditioner for the conjugate gradient method
+    M = IChol0Preconditioner(laplacian[omega == 0][:, omega == 0])
+    bands = []
+    for i in range(observed.shape[1]):
+        x, _ = cg(laplacian[omega == 0][:, omega == 0], -laplacian[omega == 0][:, omega == 1].dot(observed[omega == 1][:, i]), M=M)
+        bands.append(x)
+    completed[omega == 0] = np.stack(bands, axis=-1)
+
     logging.info("Solved!")
     return completed
