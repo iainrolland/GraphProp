@@ -47,10 +47,11 @@ def main(method, pattern, show_results):
     file_b = os.path.join(INPUTS_FOLDER, "dayB")
     params_path = os.path.join(EXPERIMENT_FOLDER, f"{method.lower()}_demo.json")
 
-    if method in ["GraphProp", "GTVM"]:
-        experiment = Experiment(method, pattern, file_a, file_b, neighbours=10, iterative=True)
+    if method in ["GraphProp"]:
+        experiment = Experiment(method, pattern, file_a, file_b, neighbours=20, iterative=False)
     else:
-        experiment = Experiment(method, pattern, file_a, file_b)
+        logging.error(f"""Completion method not recognised '{method}'""")
+        raise ValueError
     with open(params_path, 'w') as f:
         json.dump(experiment.to_dict(), f)
     output, mask = logs.log_experiment(params_path, overwrite=True)
